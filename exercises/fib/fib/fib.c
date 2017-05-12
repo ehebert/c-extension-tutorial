@@ -26,6 +26,10 @@ static PyObject*
 pyfib(PyObject* self, PyObject* n)
 {
     unsigned long as_unsigned_long = PyLong_AsUnsignedLong(n);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     PyObject* result = PyLong_FromUnsignedLong(cfib(as_unsigned_long));
     return result;
 }
