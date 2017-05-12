@@ -1,5 +1,25 @@
 #include <Python.h>
 
+static unsigned long
+cfib(unsigned long n)
+{
+    unsigned long a = 1;
+    unsigned long b = 1;
+    unsigned long c;
+
+    if (n <= 1) {
+        return 1;
+    }
+
+    while (--n > 1) {
+        c = a + b;
+        a = b;
+        b = c;
+    }
+
+    return b;
+}
+
 PyDoc_STRVAR(fib_doc, "compute the nth Fibonacci number");
 
 static PyObject*
@@ -20,6 +40,14 @@ pyfib(PyObject* self, PyObject* n)
 
     if (n_as_unsigned_long == 0) {
         return a;
+    }
+
+    if (n_as_unsigned_long < 93) {
+        PyObject* result = PyLong_FromUnsignedLong(cfib(n_as_unsigned_long));
+        if (PyErr_Occurred()) {
+            return NULL;
+        }
+        return result;
     }
 
     if (!(b = PyLong_FromUnsignedLong(1))) {
