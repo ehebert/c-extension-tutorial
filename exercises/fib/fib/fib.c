@@ -1,37 +1,46 @@
 #include <Python.h>
 
-static unsigned long
-cfib(unsigned long n)
-{
-    unsigned long a = 1;
-    unsigned long b = 1;
-    unsigned long c;
-
-    if (n <= 1) {
-        return 1;
-    }
-
-    while (--n > 1) {
-        c = a + b;
-        a = b;
-        b = c;
-    }
-
-    return b;
-}
-
 PyDoc_STRVAR(fib_doc, "compute the nth Fibonacci number");
 
 static PyObject*
 pyfib(PyObject* self, PyObject* n)
 {
-    unsigned long as_unsigned_long = PyLong_AsUnsignedLong(n);
+    PyObject* a = NULL;
+    PyObject* b = NULL;
+    PyObject* c;
+
+    unsigned long n_as_unsigned_long = PyLong_AsUnsignedLong(n);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    PyObject* result = PyLong_FromUnsignedLong(cfib(as_unsigned_long));
-    return result;
+    if (!(a = PyLong_FromUnsignedLong(1))) {
+        return NULL;
+    }
+
+    if (n_as_unsigned_long == 0) {
+        return a;
+    }
+
+    if (!(b = PyLong_FromUnsignedLong(1))) {
+        Py_DECREF(a);
+        return NULL;
+    }
+
+    while (--n_as_unsigned_long > 1) {
+        c = PyNumber_Add(a, b);
+        Py_DECREF(a);
+
+        if (!c) {
+            Py_DECREF(b);
+            return NULL;
+        }
+
+        a = b;
+        b = c;
+    }
+    Py_DECREF(a);
+    return b;
 }
 
 PyMethodDef methods[] = {
